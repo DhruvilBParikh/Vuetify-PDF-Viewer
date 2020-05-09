@@ -1,6 +1,6 @@
 <template>
   <div class="pdf-document">
-    <!-- <v-container>
+    <v-container>
       <v-row>
         <v-col cols="12">
           <v-text-field v-model="pageNo" label="Page no" outlined shaped></v-text-field> 
@@ -9,8 +9,8 @@
         </v-col>
         
       </v-row>
-    </v-container>-->
-    <div class="mb-4">
+    </v-container>
+    <!-- <div class="mb-4">
       <span>
         <v-text-field v-model="pageNo" outlined shaped></v-text-field>
         / {{pdf.numPages}}
@@ -19,7 +19,7 @@
         </v-btn>
       </span>
     </div>
-    <hr />
+    <hr /> -->
     <PDFPage
       v-for="page in pages"
       v-bind="{page, scale}"
