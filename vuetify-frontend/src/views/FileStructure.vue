@@ -62,7 +62,6 @@ export default {
   watch: {
     $route(to, from) {
       console.log("To is:" + to + " and from is:" + from);
-      console.log("path in watch::", this.path);
       this.openFolder(this.path);
     }
   },
@@ -77,16 +76,13 @@ export default {
     },
 
     openFolder(message) {
-      console.log("Message in OpenFolder function:::", message);
       let path = message;
       if (path) path = "/" + path;
       else path = "";
       axios
         .get(this.root + path)
         .then(response => {
-          console.log("Response from the backend", response);
           if (response.status === 200) {
-            console.log(this.path);
             this.files = response.data.files;
             this.folders = response.data.folders;
           }
@@ -97,25 +93,19 @@ export default {
     },
 
     back() {
-      console.log("Clicked on Back button");
       let newPath = this.path;
       newPath = newPath.substring(0, newPath.lastIndexOf("/"));
-      console.log("Path after clicking on back button:: ", newPath);
-
       this.$router.push({ name: "FileStructure", params: { path: newPath } });
     }
   },
 
   created() {
-    console.log("props:::" + this.path);
-    console.log(this.$route);
     let path = this.$route.params.path;
     if (path) path = "/" + path;
     else path = "";
     axios
       .get(this.root + path)
       .then(response => {
-        console.log("Response from the backend", response);
         if (response.status === 200) {
           this.files = response.data.files;
           this.folders = response.data.folders;

@@ -1,92 +1,83 @@
 <script>
+import debug from 'debug';
+const log = debug('app:vue_features/documents/components/PDFPage');
 export default {
-  props: ["page", "scale"],
-
-  render : function (h) {
-    const { canvasAttrs: attrs } = this;
-    return h("canvas",{attrs})
-  },
-
-  created() {
-    this.viewport = this.page.getViewport(this.scale);
-    console.log("View port::", this.viewport)
-  },
+  props: ['page', 'scale'],
   computed: {
+    actualSizeViewport() {
+      return this.viewport.clone({scale: this.scale});
+    },
+    canvasStyle() {
+      const {width: actualSizeWidth, height: actualSizeHeight} = this.actualSizeViewport;
+      const pixelRatio = window.devicePixelRatio || 1;
+      const [pixelWidth, pixelHeight] = [actualSizeWidth, actualSizeHeight].map(dim => Math.ceil(dim / pixelRatio));
+      return `width: ${pixelWidth}px; height: ${pixelHeight}px;`
+    },
     canvasAttrs() {
-      let { width, height } = this.viewport;
+      let {width, height} = this.viewport;
       [width, height] = [width, height].map(dim => Math.ceil(dim));
-
       const style = this.canvasStyle;
-      console.log("After math ceil")
-      console.log("Width:", width)
-      console.log("height:", height)
       return {
         width,
         height,
         style,
-        class: "pdf-page"
+        class: 'pdf-page',
       };
     },
-
-    canvasStyle() {
-      const {
-        width: actualSizeWidth,
-        height: actualSizeHeight
-      } = this.actualSizeViewport;
-      const pixelRatio = window.devicePixelRatio || 1;
-      console.log("Pixel Ratio:", pixelRatio)
-      const [pixelWidth, pixelHeight] = [
-        actualSizeWidth,
-        actualSizeHeight
-      ].map(dim => Math.ceil(dim / pixelRatio));
-      return `width: ${pixelWidth}px; height: ${pixelHeight}px;`;
+    pageNumber() {
+      return this.page.pageNumber;
     },
-
-    actualSizeViewport() {
-      return this.viewport.clone({ scale: this.scale });
-    }
   },
-
-  mounted() {
-    this.drawPage();
-  },
-
   methods: {
-    drawPage() {
-      if (this.renderTask) return;
-
-      const { viewport } = this;
-      const canvasContext = this.$el.getContext("2d");
-      const renderContext = { canvasContext, viewport };
-
-      
-      this.renderTask = this.page.render(renderContext);
-      this.renderTask.then(() => this.$emit("rendered", this.page))
-      .catch(this.destroyRenderTask);
+    renderPage() {
+      // PDFPageProxy#render
+      // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
+      this.renderTask = this.page.render(this.getRenderContext());
+      this.renderTask.
+        then(() => this.$emit('rendered', this.page)).
+        then(() => log(`Page ${this.pageNumber} rendered`));
     },
-    
-
     destroyPage(page) {
       if (!page) return;
+      // PDFPageProxy#_destroy
+      // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
       page._destroy();
+      // RenderTask#cancel
+      // https://mozilla.github.io/pdf.js/api/draft/RenderTask.html
       if (this.renderTask) this.renderTask.cancel();
     },
-
-    destroyRenderTask() {
-      if (!this.renderTask) return;
-      this.renderTask.cancel();
-      delete this.renderTask;
-    }
+    getRenderContext() {
+      const {viewport} = this;
+      const canvasContext = this.$el.getContext('2d');
+      return {canvasContext, viewport};
+    },
   },
-
-  beforeDestroy() {
-    this.destroyPage(this.page);
-  },
-
   watch: {
     page(page, oldPage) {
       this.destroyPage(oldPage);
-    }
-  }
+    },
+  },
+  created() {
+    // PDFPageProxy#getViewport
+    // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
+    this.viewport = this.page.getViewport(this.scale);
+  },
+  mounted() {
+    log(`Page ${this.pageNumber} mounted`);
+    this.renderPage();
+  },
+  beforeDestroy() {
+    this.destroyPage(this.page);
+  },
+  render(h) {
+    const {canvasAttrs: attrs} = this;
+    return h('canvas', {attrs});
+  },
 };
 </script>
+<style>
+.pdf-page {
+  display: block;
+  margin: 0 auto 0.5em;
+}
+</style>

@@ -10,7 +10,6 @@
       ></v-img>
       <v-toolbar-title class="mx-5">Rockliffe PDFViewer</v-toolbar-title>
       <v-spacer></v-spacer>
-      <!-- <v-img id="logo-img" src="https://cdn0.capterra-static.com/logos/150/2038943-1494571854.png" height=50 contain></v-img> -->
       <router-link to="/" tag="v-btn">
         <v-btn color="#FF8C69" flat value="feed">
           <span>Home</span>
@@ -38,7 +37,7 @@ export default {
   name: "App",
 
   data: () => ({
-    //
+    
   })
 };
 </script>
