@@ -12,7 +12,7 @@
     </v-container>-->
     <div class="mb-4">
       <span>
-        <v-text-field v-model="pageNo" outlined shaped style="align:'center', width:50px;"></v-text-field>
+        <v-text-field v-model="pageNo" outlined shaped></v-text-field>
         / {{pdf.numPages}}
         <v-btn small color="normal">
           <a :href="`#${pageNo}`" style="text-decoration:none;">GO</a>
